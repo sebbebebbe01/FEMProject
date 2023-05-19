@@ -48,6 +48,7 @@ T,q = cfc.spsolveq(K,f,bc,bcVal)
 
 print("Max temperature: ",np.max(T)-273.15)
 print("Min temperature: ",np.min(T)-273.15)
+print("hej")
 
 ## VISUALIZE 
 #mesh.showTemp(T,coords,edof)
