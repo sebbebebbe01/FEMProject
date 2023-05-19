@@ -1,0 +1,139 @@
+import calfem.geometry as cfg 
+import calfem.mesh as cfm 
+from calfem.qt5 import *
+import calfem.vis as cfv
+import calfem.core as cfc
+import calfem.utils as cfu
+import numpy as np
+import time
+
+class Mesh:
+
+    def __init__(self, el_type = 2, dofs_per_node = 1,el_size_factor = 0.20):
+        self.el_type, self.dofs_per_node, self.el_size_factor = el_type, dofs_per_node, el_size_factor
+
+    def createMesh(self):
+        """
+        Creates the mesh with the dimensions given in the problem description
+
+        Returns:
+            coords, edof, dofs, bdofs, elementmarkers, boundaryElements, ex, ey
+        """
+
+        # Dimensions (see sketch)
+        L = 0.005 
+        a = 0.1 * L
+        b = 0.1 * L
+        c = 0.3 * L
+        d = 0.05 * L
+        h = 0.15 * L
+        t = 0.05 * L
+
+        # Marker constants
+        mark_CU = 10
+        mark_NY = 20
+        mark_newt = 30
+        mark_iso = 40
+        mark_h = 50
+
+        el_type, dofs_per_node, el_size_factor = self.el_type, self.dofs_per_node, self.el_size_factor
+
+        ## GEOMETRY PART AND VISUALISATION
+
+        # Create geometry
+        g = cfg.Geometry()
+        self.g=g
+
+        # Add points
+        points = [[-L, -b-a], [-L, -0.5*L], [-L+c+d,-0.5*L], [-L+c+d, -b-a], [-L+a+t, -b-a],            #points 0-4
+                [-L+a+t, -b-a-h], [-L+a, -b-a-h], [-L+a, -b-a], [-L, -b], [-L, 0],                    #points 5-9
+                [-L+a, 0], [-L+a, -b], [-L+a+c, -b], [-L+a+c+d, -b-d], [-L+a+c+d, -0.5*L+d],          #points 10-14       
+                [-2*d, -0.2*L], [0, -0.2*L], [0, -0.2*L-d], [-2*d, -0.2*L-d], [-L+a+c+d, -0.5*L]]    #points 15-19
+
+        for x,y in points:
+            g.point([x,y])
+
+        # Add lines
+        g.spline([0, 1], marker = mark_iso)
+        g.spline([1, 2], marker = mark_iso)
+        g.spline([2, 3])
+        g.spline([3, 4])
+        g.spline([4, 5])
+        g.spline([5, 6]) 
+        g.spline([6, 7])
+        g.spline([7, 0])
+        g.spline([0, 8], marker = mark_iso)
+        g.spline([8, 9], marker = mark_h) 
+        g.spline([9, 10], marker = mark_iso) # because of symmetry right
+        g.spline([10, 11], marker = mark_newt) 
+        g.spline([11, 12], marker = mark_newt)
+        g.spline([12, 13], marker = mark_newt) 
+        g.spline([13, 14], marker = mark_newt)
+        g.spline([14, 15], marker = mark_newt)
+        g.spline([15, 16], marker = mark_newt) 
+        g.spline([16, 17], marker = mark_iso) # because of symmetry right
+        g.spline([17, 18], marker = mark_newt)
+        g.spline([18,19], marker = mark_newt)
+        g.spline([19,2], marker = mark_iso)
+
+        # Add surfaces
+        g.surface([2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20], marker = mark_CU)
+        g.surface([0,1,2,3,4,5,6,7], marker = mark_NY)
+
+        # Create mesh
+        mesh = cfm.GmshMeshGenerator(g)
+        mesh.el_size_factor = el_size_factor 
+        mesh.el_type = el_type 
+        mesh.dofs_per_node = dofs_per_node
+        mesh.return_boundary_elements = True
+        coords, edof, dofs, bdofs, elementmarkers, boundaryElements = mesh.create()
+        ex, ey = cfc.coordxtr(edof, coords, dofs)
+        self.coords, self.edof = coords, edof
+
+        return coords, edof, dofs, bdofs, elementmarkers, boundaryElements, ex, ey
+
+    def showSkeleton(self):
+        '''
+        Draws the geometry of the object and its mesh
+        '''
+        cfv.figure()
+        cfv.drawGeometry(self.g,title = "Geometry")
+
+        cfv.figure()
+        cfv.draw_mesh(coords=self.coords, edof=self.edof, dofs_per_node=self.dofs_per_node, el_type=self.el_type,
+        filled=True, title="Mesh")
+
+
+    def showTemp(self, T, coords, edof):
+
+        el_type = self.el_type # Type of mesh
+        dofs_per_node = self.dofs_per_node # Factor that changes element sizes
+
+        cfv.figure()
+        cfv.draw_nodal_values(T, coords, edof, dofs_per_node,el_type,draw_elements = False, title="Temperature")
+        cfv.draw_nodal_values(T, np.transpose(np.array((coords[:,0],-coords[:,1]))), edof, dofs_per_node,el_type,draw_elements = False, title="Temperature")
+        cfv.draw_nodal_values(T, -coords, edof, dofs_per_node,el_type,draw_elements = False, title="Temperature") 
+        cfv.draw_nodal_values(T, np.transpose(np.array((-coords[:,0],coords[:,1]))), edof, dofs_per_node,el_type,draw_elements = False, title="Temperature")
+        cfv.colorBar()
+    
+        cfv.showAndWait()
+
+    def animate(self,T,coords,edof):
+        el_type = self.el_type # Type of mesh
+        dofs_per_node = self.dofs_per_node # Factor that changes element sizes
+        
+        cfv.figure()
+        for i in range(0,T.shape[1]):
+            temp = T[:,i]
+            cfv.draw_nodal_values(temp, coords, edof, dofs_per_node,el_type,draw_elements = False, title="Temperature")
+            cfv.draw_nodal_values(temp, np.transpose(np.array((coords[:,0],-coords[:,1]))), edof, dofs_per_node,el_type,draw_elements = False, title="Temperature")
+            cfv.draw_nodal_values(temp, -coords, edof, dofs_per_node,el_type,draw_elements = False, title="Temperature") 
+            cfv.draw_nodal_values(temp, np.transpose(np.array((-coords[:,0],coords[:,1]))), edof, dofs_per_node,el_type,draw_elements = False, title="Temperature")
+            cfv.colorBar()
+            cfv.show_and_wait_mpl()
+            time.sleep(0.1)
+            
+        
+        
+
+        
