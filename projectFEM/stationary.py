@@ -44,10 +44,10 @@ f = create_f(coords, dofs, newtBounds, hBounds, thick, a_c, T_inf, hfunc)
 # Solve the system
 bc = np.array([],'i')
 bcVal = np.array([],'i')
-T,q = cfc.solveq(K,f,bc,bcVal)
+T,q = cfc.spsolveq(K,f,bc,bcVal)
 
-print("Max temperature: ",np.max(T))
-print("Min temperature: ",np.min(T))
+print("Max temperature: ",np.max(T)-273.15)
+print("Min temperature: ",np.min(T)-273.15)
 
 ## VISUALIZE 
-mesh.showTemp(T,coords,edof)
+#mesh.showTemp(T,coords,edof)
