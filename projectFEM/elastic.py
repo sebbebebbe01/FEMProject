@@ -5,7 +5,7 @@ import calfem.utils as cfu
 from mesh import *
 from matrices import *
 
-## Run stationary file, temperature = T
+## Run stationary file, temperature vector = T
 from stationary import *
 
 ## Elasticity constants
@@ -16,42 +16,12 @@ v_ny = 0.39
 alpha_cu = 17.6e-6
 alpha_ny = 80e-6
 
-# Väsentliga randvillkor, se mesh.py
-mark_iso_stuck = 60
-mark_iso_top = 70
-mark_iso_right = 80
+ptype=2 # Plane strain
+ep = [ptype, thick]
 
-
-## Recreate edof to 2 dofs per node
-mesh.dofs_per_node = 2
-newEdof = np.zeros((edof.shape[0],6), dtype=int)
-for i in range(0,edof.shape[0]):
-    eltopo = edof[i]
-    for j in range(0,3):
-        newEdof[i,2*j]   = eltopo[j]*2 - 1
-        newEdof[i,2*j+1] = eltopo[j]*2
-edof = newEdof
-
-## Add all dofs
-newDofs = np.zeros((dofs.size,2), int)
-for i in range(0,dofs.size):
-    newDofs[i][0] = dofs[i]*2 - 1
-    newDofs[i][1] = dofs[i]*2
-dofs = newDofs
-
-## Recreate bdofs
-for key in bdofs:
-    bdof_list = bdofs[key]
-    newBdof_list = []
-    for dof in bdof_list:
-        newBdof_list.append(2*dof-1)
-        newBdof_list.append(2*dof)
-    bdofs[key] = newBdof_list
-
-ptype=2
+## Create dictionaries for element properties
 D_cu = cfc.hooke(ptype, E_cu, v_cu)[np.ix_([0,1,3],[0,1,3])]
 D_ny = cfc.hooke(ptype, E_ny, v_ny)[np.ix_([0,1,3],[0,1,3])]
-ep = [ptype, thick]
 D = {}
 D[mark_CU] = D_cu
 D[mark_NY] = D_ny
@@ -65,20 +35,48 @@ v = {}
 v[mark_CU] = v_cu
 v[mark_NY] = v_ny
 
-# Create a dictionary for different element properties
-elprop = {}
-elprop[mark_CU] = D_cu
-elprop[mark_NY] = D_ny
+
+# Väsentliga randvillkor, se mesh.py
+mark_iso_stuck = 60
+mark_top_mirror = 70
+mark_right_mirror = 80
+
+
+## Recreate edof to 2 dofs per node, each node will get it's old dof replaced by 2 new ones
+mesh.dofs_per_node = 2
+newEdof = np.zeros((edof.shape[0],6), dtype=int)
+for i in range(0,edof.shape[0]):
+    eltopo = edof[i]
+    for j in range(0,3):
+        newEdof[i,2*j]   = eltopo[j]*2 - 1
+        newEdof[i,2*j+1] = eltopo[j]*2
+edof = newEdof
+
+## Add all dofs to reflect the 2 dofs per node
+newDofs = np.zeros((dofs.size,2), int)
+for i in range(0,dofs.size):
+    newDofs[i][0] = dofs[i]*2 - 1
+    newDofs[i][1] = dofs[i]*2
+dofs = newDofs
+
+## Recreate bdofs, mark all new dofs with the correct boundary condition
+for key in bdofs:
+    bdof_list = bdofs[key]
+    newBdof_list = []
+    for dof in bdof_list:
+        newBdof_list.append(2*dof-1)
+        newBdof_list.append(2*dof)
+    bdofs[key] = newBdof_list
 
 # Create K and f
 K = create_K_elastic(edof,dofs,ex,ey,elementmarkers,ep,D)
 f, dT_vec = create_f_elastic(edof,dofs,ex,ey,elementmarkers,ep,D,T,alpha,v)
 
 # Boundary conditions
-bc,bcVal = cfu.applybc(bdofs,bc,bcVal,mark_iso_stuck,0)
-bc,bcVal = cfu.applybc(bdofs,bc,bcVal,mark_h,0)
-bc,bcVal = cfu.applybc(bdofs,bc,bcVal,mark_iso_top,0,2)
-bc,bcVal = cfu.applybc(bdofs,bc,bcVal,mark_iso_right,0,1)
+bc,bcVal = cfu.applybc(bdofs,bc,bcVal,mark_iso_stuck,0) # Fastened boundaries, displacement=0
+bc,bcVal = cfu.applybc(bdofs,bc,bcVal,mark_h,0) # Boundaries marked h (constant heat flow) are also fastened
+bc,bcVal = cfu.applybc(bdofs,bc,bcVal,mark_top_mirror,0,2) # Mirrored at the top, y-displacement=0
+bc,bcVal = cfu.applybc(bdofs,bc,bcVal,mark_right_mirror,0,1) # Mirrored to the right, x-displacement=0
 
 #Solvit
 a,q = cfc.spsolveq(K, f, bc, bcVal)

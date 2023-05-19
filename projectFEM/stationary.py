@@ -4,9 +4,8 @@ import numpy as np
 from mesh import *
 from matrices import *
 
-# MATERIAL & MESH PARAMTERS/NAMING BOUNDRY PARTS AND ELEMENT TYPES
-# COPPER AREA 1, NYLON AREA 2
-T_inf = 18 + 273.15 #Kelvin
+# Temperature
+T_inf = 18 + 273.15 #Kelvin, temperature outside of the body
 
 # Material parameters (only first part for now)
 thick = 5e-3
@@ -29,7 +28,7 @@ elprop[mark_NY] = [k2]
 # Create mesh
 mesh = Mesh()
 coords, edof, dofs, bdofs, elementmarkers, boundaryElements, ex, ey = mesh.createMesh()
-#mesh.showSkeleton()
+#mesh.showSkeleton() #Show mesh and skeleton of the object
 
 # Arrays with boundary conditions
 newtBounds = boundaryElements[mark_newt]
@@ -46,9 +45,8 @@ bc = np.array([],'i')
 bcVal = np.array([],'i')
 T,q = cfc.spsolveq(K,f,bc,bcVal)
 
-print("Max temperature: ",np.max(T)-273.15)
-print("Min temperature: ",np.min(T)-273.15)
-print("hej")
+print("Max temperature (C): ",np.max(T)-273.15)
+print("Min temperature (C): ",np.min(T)-273.15)
 
 ## VISUALIZE 
-mesh.showTemp(T,coords,edof)
+#mesh.showTemp(T,coords,edof)

@@ -32,14 +32,14 @@ class Mesh:
         t = 0.05 * L
 
         # Marker constants
-        mark_CU = 10
-        mark_NY = 20
-        mark_newt = 30
-        mark_iso = 40
-        mark_h = 50
-        mark_iso_stuck = 60
-        mark_iso_top = 70
-        mark_iso_right = 80
+        mark_CU = 10 #Copper
+        mark_NY = 20 #Nylon
+        mark_newt = 30 #Boundaries following Newton's law of cooling
+        mark_iso = 40 #Homogeneous Dirichlet conditions (isolated), these boundaries are also fastened (no displacement)
+        mark_h = 50 #Constant heat flow boundary condition
+        mark_iso_stuck = 60 #Isolated and fastened
+        mark_top_mirror = 70 #Homogeneous Dirichlet conditions in y-direction (due to mirror-symmetry)
+        mark_right_mirror = 80 #Homogeneous Dirichlet conditions in x-direction (due to mirror-symmetry)
 
         el_type, dofs_per_node, el_size_factor = (
             self.el_type,
@@ -91,14 +91,14 @@ class Mesh:
         g.spline([7, 0])
         g.spline([0, 8], marker=mark_iso_stuck)
         g.spline([8, 9], marker=mark_h)
-        g.spline([9, 10], marker=mark_iso_top)  # because of symmetry right
+        g.spline([9, 10], marker=mark_top_mirror)  # because of symmetry right
         g.spline([10, 11], marker=mark_newt)
         g.spline([11, 12], marker=mark_newt)
         g.spline([12, 13], marker=mark_newt)
         g.spline([13, 14], marker=mark_newt)
         g.spline([14, 15], marker=mark_newt)
         g.spline([15, 16], marker=mark_newt)
-        g.spline([16, 17], marker=mark_iso_right)  # because of symmetry right
+        g.spline([16, 17], marker=mark_right_mirror)  # because of symmetry right
         g.spline([17, 18], marker=mark_newt)
         g.spline([18, 19], marker=mark_newt)
         g.spline([19, 2], marker=mark_iso)
@@ -140,6 +140,9 @@ class Mesh:
         )
 
     def showTemp(self, T, coords, edof, clim = None):
+        """
+        Mirrors and draws the temperature distribution of the object with (optionally) color bar limits clim = [a,b]
+        """
         el_type = self.el_type  # Type of mesh
         dofs_per_node = self.dofs_per_node  # Factor that changes element sizes
 
@@ -188,6 +191,9 @@ class Mesh:
         cfv.showAndWait()
 
     def vis_von_Mises(self, von_Mises, coords, edof):
+        """
+        Mirrors and draws the nodal von Mises strains
+        """
         cfv.figure()
         cfv.draw_nodal_values(
             von_Mises,
@@ -232,6 +238,11 @@ class Mesh:
         cfv.show_and_wait()
 
     def elasticVis(self, von_Mises, a, coords, edof):
+        """
+        Mirrors and draws the displacements, a, of the nodes with nodal values (strains), von_Mises.
+        """
+
+        ## Puts the displacement values in a in a (nNodes, 2) array instead of (2*nNodes,1) in order to mirror
         b = np.zeros((int(a.size / 2), 2))
         i = 0
         j = 0
@@ -240,11 +251,10 @@ class Mesh:
             i += 1
             j = (j + 1) % 2
 
-        el_type = self.el_type  # Type of mesh
-        dofs_per_node = self.dofs_per_node  # Factor that changes element sizes
+        el_type = self.el_type
+        dofs_per_node = self.dofs_per_node
         magnfac=1.0
         showOldMesh = False
-        clim = [0, 1e9]
 
         von_Mises = von_Mises.tolist()
         cfv.figure()
@@ -258,7 +268,6 @@ class Mesh:
             draw_undisplaced_mesh=showOldMesh,
             title="Strains",
             magnfac=magnfac,
-            #clim=clim
         )
         cfv.draw_displacements(
             np.array((b[:, 0], -b[:, 1])).T,
@@ -270,7 +279,6 @@ class Mesh:
             draw_undisplaced_mesh=showOldMesh,
             title="Strains",
             magnfac=magnfac,
-            #clim=clim
         )
         cfv.draw_displacements(
             -b,
@@ -282,7 +290,6 @@ class Mesh:
             draw_undisplaced_mesh=showOldMesh,
             title="Strains",
             magnfac=magnfac,
-            #clim=clim
         )
         cfv.draw_displacements(
             np.array((-b[:, 0], b[:, 1])).T,
@@ -294,6 +301,5 @@ class Mesh:
             draw_undisplaced_mesh=showOldMesh,
             title="Strains",
             magnfac=magnfac,
-            #clim=clim
         )
         cfv.show_and_wait()

@@ -6,12 +6,9 @@ from matrices import *
 import time
 
 
-# MATERIAL & MESH PARAMTERS/NAMING BOUNDRY PARTS AND ELEMENT TYPES
-# COPPER AREA 1, NYLON AREA 2
-T_0 = 18 + 273.15
-T_inf = 18 + 273.15 #Kelvin
-T_max = 143.84823832408833 + 273.15 # From stationary calculations
-#T_max = 142.985 + 273.15 #Mac
+# Temperatures
+T_inf = 18 + 273.15 #Kelvin, temperature outside of the body
+T_max = 143.84823832408833 + 273.15 # Calculated from the stationary problem
 
 # Material parameters (only first part for now)
 thick = 10#5e-3
@@ -51,49 +48,41 @@ f = create_f(coords, dofs, newtBounds, hBounds, thick, a_c, T_inf, hfunc)
 # Create C matrix
 C = create_C(dofs,edof,ex,ey,elementmarkers,thick,elprop)
 
-# Time interval
-t0 = 0
-tend = 80
-m = 800
-dT=(tend-t0)/(m)
-
-M = C+dT*K
-T = T_0*np.ones([np.size(dofs),m+1])
-
-t=np.linspace(t0,tend,m+1)
-
+# Boundary vectors (empty)
 bc = np.array([],'i')
 bcVal = np.array([],'i')
 
-a=T_0*np.ones([np.size(dofs),1])
-#mesh.showTemp(a,coords,edof)
+# Time interval
+t0 = 0
+tend = 80
+m = 800 #Nr of steps
+delta_t=(tend-t0)/(m) #Step size
 
-# Find 90% of T_max
+a=T_inf*np.ones([np.size(dofs),1]) # Initial temperature = 18 celsius
+
+## Find 90 % of T_max
 t_step = 0
-steps = 0
-
+M = C+delta_t*K #Help matrix
 start = time.time()
-while np.max(a)-273.15<0.9*(T_max-273.15): # while max(a)-273.15 < 0.9*(T_max-273.15): För celsius
-    rhs = C@a + dT*f
+while np.max(a)-273.15 < 0.9*(T_max-273.15):
+    rhs = C@a + delta_t*f
     a,q = cfc.spsolveq(M,rhs,bc,bcVal)
-    t_step+=dT
-    steps+=1
+    t_step+=delta_t
 end = time.time()
 print("Time to reach 90% of max temp: ", t_step)
-print("Time step: ", dT, " s")
+print("Time step: ", delta_t, " s")
 print("Calculation time: ", end-start)
-print("Max temp at 90% of max temp: ",np.max(a))
-print("Min temp at 90% of max temp: ",np.min(a))
+#print("Max temp at 90% of max temp: ",np.max(a))
+#print("Min temp at 90% of max temp: ",np.min(a))
 
-a=T_0*np.ones([np.size(dofs),1])
-dT = t_step*0.03 / 5
-M = C+dT*K
+## Show 5 evenely spread snapshots of the first 3 %  of the time it took to reach 90 % of T_max
+a=T_inf*np.ones([np.size(dofs),1]) #Reset temperature vector
+delta_t = t_step*0.03 / 5 #New step size
+M = C+delta_t*K #Help matrix
 clim = [291, 300.5] #Colorbar limits, picked manually
 for i in range(0,5):
-    rhs = C@a + dT*f
+    rhs = C@a + delta_t*f
     a,q = cfc.spsolveq(M,rhs,bc,bcVal)
-    print("Max temp after 3% of 90% of max temp: ",np.max(a))
-    print("Min temp after 3% of 90% of max temp: ",np.min(a))
     mesh.showTemp(a,coords,edof,clim)
 
 print("Max temp after 3% of 90% of max temp: ",np.max(a))
