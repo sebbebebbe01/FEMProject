@@ -51,4 +51,4 @@ print("Min temperature: ",np.min(T)-273.15)
 print("hej")
 
 ## VISUALIZE 
-#mesh.showTemp(T,coords,edof)
+mesh.showTemp(T,coords,edof)
