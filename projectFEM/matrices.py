@@ -91,7 +91,9 @@ def calc_von_Mises(ed,ex,ey,ep,D,elementmarkers,nrNodes,edof,alpha,E,dT_vec,v):
         sigma_zz = v[elMarker] * (es[0,0] + es[0,1]) - alpha[elMarker]*E[elMarker]*dT_vec[j]
         j+=1
         vM_el.append(np.sqrt( pow(es[0,0],2) + pow(es[0,1],2) + pow(sigma_zz,2) - es[0,0]*es[0,1] - es[0,1]*sigma_zz - sigma_zz*es[0,0] + 3*pow(es[0,2],2)))
-        
+    
+    print(np.max(vM_el))
+
     trackRecord = np.zeros((nrNodes,2))
     
     for i in range(0,len(vM_el)):

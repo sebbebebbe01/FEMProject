@@ -138,6 +138,7 @@ class Mesh:
             filled=True,
             title="Mesh (units in mm)",
         )
+        cfv.showAndWait()
 
     def showTemp(self, T, coords, edof, clim = None):
         """
@@ -254,8 +255,8 @@ class Mesh:
         el_type = self.el_type
         dofs_per_node = self.dofs_per_node
         magnfac=1.0
-        showOldMesh = False
-
+        showOldMesh = True
+        title = 'Displacements (magnfac = '+ str(magnfac) + ') and strains'
         von_Mises = von_Mises.tolist()
         cfv.figure()
         cfv.draw_displacements(
@@ -266,7 +267,7 @@ class Mesh:
             el_type,
             von_Mises,
             draw_undisplaced_mesh=showOldMesh,
-            title="Strains",
+            title=title,
             magnfac=magnfac,
         )
         cfv.draw_displacements(
@@ -277,7 +278,7 @@ class Mesh:
             el_type,
             von_Mises,
             draw_undisplaced_mesh=showOldMesh,
-            title="Strains",
+            title=title,
             magnfac=magnfac,
         )
         cfv.draw_displacements(
@@ -288,7 +289,7 @@ class Mesh:
             el_type,
             von_Mises,
             draw_undisplaced_mesh=showOldMesh,
-            title="Strains",
+            title=title,
             magnfac=magnfac,
         )
         cfv.draw_displacements(
@@ -299,7 +300,7 @@ class Mesh:
             el_type,
             von_Mises,
             draw_undisplaced_mesh=showOldMesh,
-            title="Strains",
+            title=title,
             magnfac=magnfac,
         )
         cfv.show_and_wait()

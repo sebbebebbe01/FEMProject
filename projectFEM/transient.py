@@ -8,7 +8,10 @@ import time
 
 # Temperatures
 T_inf = 18 + 273.15 #Kelvin, temperature outside of the body
-T_max = 143.84823832408833 + 273.15 # Calculated from the stationary problem
+#T_max, el_size_factor = 143.78121812271985 + 273.15, 0.2 # Calculated from the stationary problem using el_size_factor = 0.2
+#T_max, el_size_factor = 143.84823832408833 + 273.15, 0.02 
+T_max, el_size_factor = 143.85509829273457 + 273.15, 0.01 
+#T_max, el_size_factor = 143.85819010827964 + 273.15, 0.005
 
 # Material parameters (only first part for now)
 thick = 10#5e-3
@@ -32,7 +35,7 @@ elprop[mark_NY] = [k2,c_2,rho_2]
 
 
 # Create mesh
-mesh = Mesh()
+mesh = Mesh(el_size_factor=el_size_factor)
 coords, edof, dofs, bdofs, elementmarkers, boundaryElements, ex, ey = mesh.createMesh()
 
 # Arrays with boundary conditions
@@ -62,14 +65,20 @@ a=T_inf*np.ones([np.size(dofs),1]) # Initial temperature = 18 celsius
 
 ## Find 90 % of T_max
 t_step = 0
+prev_max = T_inf # Used to find a more accurate t_90
 M = C+delta_t*K #Help matrix
-start = time.time()
+start = time.time() # Measure computational time
 while np.max(a)-273.15 < 0.9*(T_max-273.15):
     rhs = C@a + delta_t*f
     a,q = cfc.spsolveq(M,rhs,bc,bcVal)
     t_step+=delta_t
+    new_max = np.max(a)
+    delta_temp = new_max - prev_max
+    prev_max = new_max
 end = time.time()
-print("Time to reach 90% of max temp: ", t_step)
+#Find a more accurate t_90 by linearizing the relation bewtween the last and second to last temps
+t_90 = t_step - (np.max(a)-273.15 - 0.9*(T_max-273.15))*delta_t/delta_temp
+print("Time to reach 90% of max temp: ", t_90)
 print("Time step: ", delta_t, " s")
 print("Calculation time: ", end-start)
 #print("Max temp at 90% of max temp: ",np.max(a))
@@ -77,7 +86,7 @@ print("Calculation time: ", end-start)
 
 ## Show 5 evenely spread snapshots of the first 3 %  of the time it took to reach 90 % of T_max
 a=T_inf*np.ones([np.size(dofs),1]) #Reset temperature vector
-delta_t = t_step*0.03 / 5 #New step size
+delta_t = t_90*0.03 / 5 #New step size
 M = C+delta_t*K #Help matrix
 clim = [291, 300.5] #Colorbar limits, picked manually
 for i in range(0,5):
@@ -88,5 +97,3 @@ for i in range(0,5):
 print("Max temp after 3% of 90% of max temp: ",np.max(a))
 print("Min temp after 3% of 90% of max temp: ",np.min(a))
 print("Average temp after 3% of 90% of max temp: ", np.average(a))
-
-#mesh.showTemp(a,coords,edof,clim)
