@@ -59,23 +59,23 @@ class Mesh:
             [-L, -0.5 * L],
             [-L + c + d, -0.5 * L],
             [-L + c + d, -b - a],
-            [-L + a + t, -b - a],  # points 0-4
+            [-L + a + t, -b - a],
             [-L + a + t, -b - a - h],
             [-L + a, -b - a - h],
             [-L + a, -b - a],
             [-L, -b],
-            [-L, 0],  # points 5-9
+            [-L, 0],
             [-L + a, 0],
             [-L + a, -b],
             [-L + a + c, -b],
             [-L + a + c + d, -b - d],
-            [-L + a + c + d, -0.5 * L + d],  # points 10-14
+            [-L + a + c + d, -0.5 * L + d], 
             [-2 * d, -0.2 * L],
             [0, -0.2 * L],
             [0, -0.2 * L - d],
             [-2 * d, -0.2 * L - d],
             [-L + a + c + d, -0.5 * L],
-        ]  # points 15-19
+        ]
 
         for x, y in points:
             g.point([x, y])
@@ -91,14 +91,14 @@ class Mesh:
         g.spline([7, 0])
         g.spline([0, 8], marker=mark_iso_stuck)
         g.spline([8, 9], marker=mark_h)
-        g.spline([9, 10], marker=mark_top_mirror)  # because of symmetry right
+        g.spline([9, 10], marker=mark_top_mirror)  # because of symmetry
         g.spline([10, 11], marker=mark_newt)
         g.spline([11, 12], marker=mark_newt)
         g.spline([12, 13], marker=mark_newt)
         g.spline([13, 14], marker=mark_newt)
         g.spline([14, 15], marker=mark_newt)
         g.spline([15, 16], marker=mark_newt)
-        g.spline([16, 17], marker=mark_right_mirror)  # because of symmetry right
+        g.spline([16, 17], marker=mark_right_mirror)  # because of symmetry
         g.spline([17, 18], marker=mark_newt)
         g.spline([18, 19], marker=mark_newt)
         g.spline([19, 2], marker=mark_iso)
@@ -202,7 +202,6 @@ class Mesh:
             edof,
             self.dofs_per_node,
             self.el_type,
-            #draw_undisplaced_mesh=True,
             title="von Mises",
             draw_elements=False
         )
@@ -212,7 +211,6 @@ class Mesh:
             edof,
             self.dofs_per_node,
             self.el_type,
-            #draw_undisplaced_mesh=True,
             title="von Mises",
             draw_elements=False
         )
@@ -222,7 +220,6 @@ class Mesh:
             edof,
             self.dofs_per_node,
             self.el_type,
-            #draw_undisplaced_mesh=True,
             title="von Mises",
             draw_elements=False
         )
@@ -232,15 +229,14 @@ class Mesh:
             edof,
             self.dofs_per_node,
             self.el_type,
-            #draw_undisplaced_mesh=True,
             title="von Mises",
             draw_elements=False
         )
         cfv.show_and_wait()
 
-    def elasticVis(self, von_Mises, a, coords, edof):
+    def vis_disp_and_stress(self, von_Mises, a, coords, edof):
         """
-        Mirrors and draws the displacements, a, of the nodes with nodal values (strains), von_Mises.
+        Mirrors and draws the displacements, a, of the nodes with nodal values (von Mises stresses), von_Mises.
         """
 
         ## Puts the displacement values in a in a (nNodes, 2) array instead of (2*nNodes,1) in order to mirror
@@ -252,11 +248,11 @@ class Mesh:
             i += 1
             j = (j + 1) % 2
 
-        el_type = self.el_type
-        dofs_per_node = self.dofs_per_node
+        el_type = self.el_type  # Type of mesh
+        dofs_per_node = self.dofs_per_node  # Factor that changes element sizes
         magnfac=1.0
         showOldMesh = True
-        title = 'Displacements (magnfac = '+ str(magnfac) + ') and strains'
+        title = 'Displacements (magnfac = '+ str(magnfac) + ') and stresses'
         von_Mises = von_Mises.tolist()
         cfv.figure()
         cfv.draw_displacements(

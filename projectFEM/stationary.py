@@ -8,8 +8,8 @@ from matrices import *
 T_inf = 18 + 273.15 #Kelvin, temperature outside of the body
 
 # Material parameters (only first part for now)
-thick = 5e-3
-ep = [thick]
+t_d = 5e-3
+ep = [t_d]
 k1,k2 = 385, 0.26
 hfunc = 10**5
 a_c = 40
@@ -35,10 +35,10 @@ newtBounds = boundaryElements[mark_newt]
 hBounds = boundaryElements[mark_h]
 
 # Create the K-matrix
-K = create_Km(coords, edof, dofs, elementmarkers, newtBounds, ex, ey, ep, elprop, mark_newt, a_c)
+K = create_Km(coords, edof, dofs, elementmarkers, newtBounds, ex, ey, ep, elprop, a_c)
 
 # Create the f-vectors
-f = create_f(coords, dofs, newtBounds, hBounds, thick, a_c, T_inf, hfunc)
+f = create_f(coords, dofs, newtBounds, hBounds, t_d, a_c, T_inf, hfunc)
 
 # Solve the system
 bc = np.array([],'i')

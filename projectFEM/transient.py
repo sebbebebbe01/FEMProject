@@ -14,8 +14,8 @@ T_max, el_size_factor = 143.85509829273457 + 273.15, 0.01
 #T_max, el_size_factor = 143.85819010827964 + 273.15, 0.005
 
 # Material parameters (only first part for now)
-thick = 10#5e-3
-ep = [thick]
+t_d = 10#5e-3
+ep = [t_d]
 k1,k2 = 385, 0.26
 hfunc = 10**5
 a_c = 40
@@ -43,13 +43,13 @@ newtBounds = boundaryElements[mark_newt]
 hBounds = boundaryElements[mark_h]
 
 # Create the K-matrix
-K = create_Km(coords, edof, dofs, elementmarkers, newtBounds, ex, ey, ep, elprop, mark_newt, a_c)
+K = create_Km(coords, edof, dofs, elementmarkers, newtBounds, ex, ey, ep, elprop, a_c)
 
 # Create the f-vectors
-f = create_f(coords, dofs, newtBounds, hBounds, thick, a_c, T_inf, hfunc)
+f = create_f(coords, dofs, newtBounds, hBounds, t_d, a_c, T_inf, hfunc)
 
 # Create C matrix
-C = create_C(dofs,edof,ex,ey,elementmarkers,thick,elprop)
+C = create_C(dofs,edof,ex,ey,elementmarkers,t_d,elprop)
 
 # Boundary vectors (empty)
 bc = np.array([],'i')
