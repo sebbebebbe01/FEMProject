@@ -83,11 +83,24 @@ bc,bcVal = cfu.applybc(bdofs,bc,bcVal,mark_right_mirror,0,1) # Mirrored to the r
 #Solvit
 a,q = cfc.spsolveq(K, f, bc, bcVal)
 
-# calculate stresses and strains 
+# calculate stresses and strains
 ed = cfc.extractEldisp(newEdof, a)
 von_Mises = calc_von_Mises(ed,ex,ey,ep,D,elementmarkers,dofs.shape[0],edof,alpha,E,dT_vec,nu) # edof for the thermal, not elastic, problem
 
-print("Max nodal von Mises: ", np.max(von_Mises))
+# Find the maximum nodal stress for each material
+max_stress = {}
+max_stress[mark_CU] = 0
+max_stress[mark_NY] = 0
+for i in range(len(elementmarkers)):
+    elMark = elementmarkers[i]
+    thermalDofs = edof[i]
+    for node in thermalDofs:
+        stress = von_Mises[node-1]
+        if stress > max_stress[elMark]:
+            max_stress[elMark] = stress
+
+print("Max nodal von Mises, copper: ", max_stress[mark_CU])
+print("Max nodal von Mises,  nylon: ", max_stress[mark_NY])
 print("Min nodal von Mises: ", np.min(von_Mises))
 
 # Visualize

@@ -193,7 +193,7 @@ class Mesh:
 
     def vis_von_Mises(self, von_Mises, coords, edof):
         """
-        Mirrors and draws the nodal von Mises strains
+        Mirrors and draws the nodal von Mises stresses
         """
         cfv.figure()
         cfv.draw_nodal_values(
