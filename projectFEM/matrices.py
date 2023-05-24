@@ -142,6 +142,9 @@ def calc_von_Mises(
         1,
     ]  # We just want to substract thermal stresses from total normal stresses
     j = 0
+    max_stress={}
+    max_stress[10]=0
+    max_stress[20]=0
     for eled, elx, ely, elMarker in zip(ed, ex, ey, elementmarkers):
         es, et = cfc.plants(elx, ely, ep, D[elMarker], eled)
         es[:, ind] -= (
@@ -152,8 +155,7 @@ def calc_von_Mises(
             - alpha[elMarker] * E[elMarker] * dT_vec[j]
         )  # Manual calculation of sigma_zz (not given by plants)
         j += 1
-        vM_el.append(
-            np.sqrt(
+        vM = np.sqrt(
                 pow(es[0, 0], 2)
                 + pow(es[0, 1], 2)
                 + pow(sigma_zz, 2)
@@ -161,8 +163,13 @@ def calc_von_Mises(
                 - es[0, 1] * sigma_zz
                 - sigma_zz * es[0, 0]
                 + 3 * pow(es[0, 2], 2)
-            )
-        )  # See report
+        ) # See report
+        vM_el.append(vM)  
+        if vM > max_stress[elMarker]:
+            max_stress[elMarker] = vM
+
+    print("Max elemental stress, copper: ",max_stress[10][0])
+    print("Max elemental stress,  nylon: ",max_stress[20][0])
 
     # Add neighboring elemental values of a node to a help matrix and divide by the number of adjacent elements to get nodal stesses
     nodal_vM_help = np.zeros((nrNodes, 2))
