@@ -5,14 +5,16 @@ def xfer_2_1(f):
     R, C = 56e3, 4.7e-9
     omega0 = 1/R/C
     T = omega0/(s+omega0)
-    return T
+    omega_c = omega0
+    return T, omega_c
 
 def xfer_2_2(f):
     s = 1j * 2*np.pi*f
     R, C = 56e3, 4.7e-9
     omega0 = 1/R/C
     T = s / (s+omega0)
-    return T
+    omega_c = omega0
+    return T, omega_c
 
 def xfer_2_3(f):
     s = 1j * 2*np.pi*f
@@ -21,7 +23,7 @@ def xfer_2_3(f):
     omega1 = 1/R1/C
     omegaP = 1/RP/C
     T = (s+omega1) / (s+omegaP)
-    return T
+    return T, [omega1, omegaP]
 
 def xfer_2_4(f):
     s = 1j * 2*np.pi*f
@@ -29,7 +31,7 @@ def xfer_2_4(f):
     omega1 = 1/R1/C
     omega2 = 1/(R1+R2)/C
     T = omega2/omega1 * (s+omega1) / (s+omega2)
-    return T
+    return T, [omega2, omega1]
 
 def xfer_T_H(f, R2):
     s = 1j * 2*np.pi*f

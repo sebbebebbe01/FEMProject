@@ -1,7 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+import theoretical_task2
+
 task = '2.4'
+name = '(d)'
+interval = '20-20k'
 filename = str(task[0] + '_' + task[2] + '_bode_20-20k.txt')
 with open(str('C:/Users/sebas/.vscode/experimental_physics/poles_and_zeros/data/' + filename)) as f:
     f.readline()
@@ -22,22 +26,31 @@ x = [r * np.cos(np.pi / 180 * f) for r,f in zip(amplitude, phase)]
 y = [r * np.sin(np.pi / 180 * f) for r,f in zip(amplitude, phase)]
 
 plt.figure(0)
-plt.semilogx(freq,gain)
-plt.title(str('Bode amplitude of task ' + task + ', experimental'))
+plt.semilogx(freq,gain, label='Experimental')
+#plt.title(str('Bode amplitude of Circuit ' + name))
+plt.title(str('Experimental gain of Circuit ' + name + ' with asymptotes'))
 plt.xlabel('Frequency (Hz)')
 plt.ylabel('Gain (dB)')
-plt.grid()
+plt.legend()
+#plt.grid()
 
 plt.figure(1)
-plt.semilogx(freq,phase)
-plt.title(str('Bode phase of task ' + task + ', experimental'))
+plt.semilogx(freq,phase, label='Experimental')
+#plt.title(str('Bode phase of Circuit ' + name))
+plt.title(str('Experimental phase shift of Circuit ' + name + ' with phase guidelines'))
 plt.xlabel('Frequency (Hz)')
-plt.ylabel('Phase shifft (deg)')
-plt.grid()
+plt.ylabel('Phase shift (deg)')
+plt.legend()
+#plt.grid()
 
 plt.figure(2)
-plt.plot(x,y)
-plt.title(str('Nyquist plot of task ' + task + ', experimental'))
-plt.grid()
+plt.plot(x,y, label='Experimental')
+plt.plot(x[-1], y[-1], 'ro', label=str(interval[3] + interval[4] + ' kHz'))
+plt.title(str('Nyquist plot of Circuit ' + name))
+plt.legend()
+#plt.grid()
+
+
+#print(np.arctan(np.min(np.array(y)/np.array(x)))*180/np.pi)
 
 plt.show()

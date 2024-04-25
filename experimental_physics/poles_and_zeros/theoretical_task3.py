@@ -2,29 +2,29 @@ import numpy as np
 import matplotlib.pyplot as plt
 import transferfuncs
 
-trans = 'T_H'
+trans = 'T_B'
 xfer = getattr(transferfuncs, str('xfer_' + trans))
 
-R2 = 10e3
+R2 = 150e3
 
 f = np.logspace(np.log10(10),np.log10(20e3),500)
 T = xfer(f, R2)
 
 label = str('$'+trans+'$')
 plt.figure(0)
-plt.semilogx(f, 20*np.log10(abs(T)))
+plt.semilogx(f, 20*np.log10(abs(T)), 'black', linestyle=':', label='Theoretical')
 plt.title(str('Bode amplitude of task ' + label + ', theoretical'))
 plt.xlabel('Frequency (Hz)')
 plt.ylabel('Gain (dB)')
 plt.grid()
 plt.figure(1)
-plt.semilogx(f, (180/np.pi)*np.unwrap(np.angle(T)))
+plt.semilogx(f, (180/np.pi)*np.unwrap(np.angle(T)), 'black', linestyle=':', label='Theoretical')
 plt.title(str('Bode phase of task ' + label + ', theoretical'))
 plt.xlabel('Frequency (Hz)')
 plt.ylabel('Phase shift (deg)')
 plt.grid()
 plt.figure(2)
-plt.plot(np.real(T), np.imag(T))
+plt.plot(np.real(T), np.imag(T), 'black', linestyle=':', label='Theoretical')
 plt.title(str('Nyquist plot of task ' + label + ', theoretical'))
 plt.grid()
-plt.show()
+#plt.show()
